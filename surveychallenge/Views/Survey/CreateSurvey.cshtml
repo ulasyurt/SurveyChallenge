@@ -1,0 +1,196 @@
+﻿@model surveychallenge.Survey
+
+@{
+    ViewBag.Title = "Create Survey";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+
+<style type="text/css">
+    #SurveyId { display: none; }
+    #SurveySubmitCount{display:none;}
+    .row { }
+        .row .col-md-6 { height: 80px; vertical-align: middle }
+            .row .col-md-6 .divPageTitle { font-size: 20pt; font-weight: 600; padding-top: 20px; }
+            .row .col-md-6 .divButtons { vertical-align: middle; }
+            .row .col-md-6 .divButtons { text-align: right; height: 100%; padding-top: 20px; }
+                .row .col-md-6 .divButtons .btn { margin-top: auto; }
+
+    .modal-title { display: inline-block !important; }
+    .divRemoveOption { display: inline-block; float: right; }
+    .divOptionTitleVal { display: inline-block; }
+    .divQuestionTitleVal { display: inline-block; width: 60%; height: 100%; overflow-wrap: break-word; }
+</style>
+
+
+<div id="SurveyId">@Model.SurveyId</div>
+<div id="SurveySubmitCount">@Model.SubmitCount</div>
+<div class="row">
+    <div class="col-md-6">
+        <div class="divPageTitle">Edit Survey</div>
+    </div>
+    <div class="col-md-6">
+        <div class="divButtons">
+            <div class="btn btn-primary" data-toggle="modal" data-target="#NewQuestionModal">ADD QUESTION</div>
+            <div class="btn btn-danger" onclick="location.href='/survey'">CANCEL</div>
+            <div class="btn btn-success" onclick="SaveSurvey()">SAVE</div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <form id="SurveyForm">
+            <div class="form-group">
+                <label for="SurveyTitle">Survey Title</label>
+                <input type="text" class="form-control" id="SurveyTitle" value="@Model.SurveyTitle" />
+            </div>
+            <div class="form-group">
+                <label for="SurveyStatus">Survey Status</label>
+                <select class="form-control" id="SurveyStatus">
+                    <option value="0">Closed</option>
+                    <option value="1" selected="selected">Open</option>
+                </select>
+            </div>
+            @foreach (var question in Model.Question)
+            {
+                <div class='form-group'>
+                    <ul class='list-group'>
+                        <li class='list-group-item' style='font-weight:600;height:100px;'><div class='divQuestionTitleVal' data-questionid="@question.QuestionId">@question.QuestionTextValue</div><button type='button' class='btn btn-danger' onclick='DeleteQuestion(this)' style='float:right'>Delete</button></li>
+                        @foreach (var option in question.Option)
+                        {
+                            <li class='list-group-item liOption' data-optionid="@option.OptionId"><div class="liOptionTitle" style="display:inline-block">@option.OptionTextValue</div> [Submit Count(<div class="liOptionCount" style="display:inline-block">@option.SubmitCount</div>)]</li>
+                        }
+                    </ul>
+                </div>
+            }
+        </form>
+    </div>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="NewQuestionModal" tabindex="-1" role="dialog" aria-labelledby="NewQuestionModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="NewQuestionModalTitle">New Question</div>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cancel">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="QuestionTitle">Question Title</label>
+                    <input type="text" class="form-control" id="QuestionTitle">
+                </div>
+                <div class="form-group" id="OptionsFormContainer">
+                    <ul class="list-group" id="Options">
+                        <li class="list-group-item" style="font-weight:600">Options</li>
+                    </ul>
+                </div>
+                <div class="form-group">
+                    <label for="OptionTitle">New Option</label>
+                    <input type="text" class="form-control" id="OptionTitle">
+                </div>
+                <button type="button" class="btn btn-primary" onclick="AddOption()">Add</button>
+            </div>
+            <div class="modal-footer">
+                <button type="button" onclick="ClearModal()" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="AddQuestion()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(window).on("load", function () {
+        $("#SurveyStatus").val(@Model.SurveyStatus);
+    });
+    function AddOption() {
+        if ($("#OptionTitle").val() == "") {
+            alert("Please enter option title.");
+        }
+        else if ($(".list-group-item .divOptionTitleVal").length >= 10){
+            alert("You have reached maximum option count.");
+        }
+        else if ($("#OptionTitle").val() != "" && $(".list-group-item .divOptionTitleVal").length<10) {
+            $("<li class='list-group-item'><div class='divOptionTitleVal'>" + $("#OptionTitle").val() + "</div><div class='divRemoveOption' onclick='RemoveOption(this)'>X</div></li>").appendTo($("#Options"));
+            $("#OptionTitle").val("");
+        }
+    }
+    function RemoveOption(Element) {
+        $(Element).parent().remove();
+    }
+    function ClearModal() {
+        $("#QuestionTitle").val("");
+        $("#Options").children().first().nextAll().remove();
+        $("#OptionTitle").val("");
+    }
+    function AddQuestion() {
+        if ($("#QuestionTitle").val() == ""){
+            alert("Please enter question title.");
+        }
+        else if ($("#QuestionTitle").val() != "") {
+            var formgroup = $("<div class='form-group'><ul class='list-group'><li class='list-group-item' style='font-weight:600;height:80px;'><div class='divQuestionTitleVal'>" + $("#QuestionTitle").val() + "</div><button type='button' class='btn btn-danger' onclick='DeleteQuestion(this)' style='float:right'>Delete</button></li></ul></div>");
+            $("#Options .list-group-item .divOptionTitleVal").each(function () {
+                $("<li class='list-group-item liOption'><div class='liOptionTitle' style='display:inline-block;'>" + $(this).html() + "</div> [Submit Count(<div class='liOptionCount' style='display:inline-block;'>0</div>)]</li>").appendTo(formgroup.find("ul"));
+            });
+            formgroup.appendTo($("#SurveyForm"));
+            $(".modal-footer .btn-secondary").trigger("click");
+            ClearModal();
+        }
+    }
+    function DeleteQuestion(Element) {
+        $(Element).parents(".form-group").remove();
+    }
+    function DetectSubmitCount() {
+        if ($("#SurveySubmitCount").html() == "") {
+            return 0;
+        }
+        else {
+            return $("#SurveySubmitCount").html()
+        }
+    }
+    function SaveSurvey() {
+        if ($("#SurveyTitle").val() == "") {
+            alert("Please enter survey title.");
+        }
+        if ($("#SurveyTitle").val()!="") {
+            var Survey = new Object();
+            Survey.SurveyId = $("#SurveyId").html();
+            Survey.SurveyTitle = $("#SurveyTitle").val();
+            Survey.SurveyStatus = $("#SurveyStatus").val();
+            Survey.SubmitCount = DetectSubmitCount();
+            var Question = [];
+            $("#SurveyForm .form-group .list-group .list-group-item .divQuestionTitleVal").each(function () {
+                var QuestionTemp = {
+                    "QuestionId": $(this).attr("data-questionid"),
+                    "QuestionTextValue": $(this).html()
+                }
+                var Option = [];
+                $(this).parent().parent().find(".liOption").each(function () {
+                    Option.push({
+                        "OptionId": $(this).attr("data-optionid"),
+                        "OptionTextValue": $(this).find(".liOptionTitle").html(),
+                        "SubmitCount": $(this).find(".liOptionCount").html()
+                    });
+                });
+                QuestionTemp.Option = Option
+                Question.push(QuestionTemp);
+            });
+            Question.Option = Option;
+            Survey.Question = Question;
+            if (Survey != null) {
+                $.ajax({
+                    type: "POST",
+                    url: "/Survey/SaveSurvey",
+                    data: JSON.stringify(Survey),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function () {
+                        location.href="/survey"
+                    },
+                    failure: function () {alert("Error!");},
+                    error: function (response) {alert(response.responseText);}
+                });
+            }
+        }
+    }
+</script>

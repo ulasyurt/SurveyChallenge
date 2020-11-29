@@ -1,0 +1,31 @@
+﻿@model surveychallenge.Survey
+
+@{
+    if (Request.IsAuthenticated)
+    {
+        Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+}
+<div style="text-align:right; padding-top:20px;">
+    <button type="button" class="btn btn-warning" onclick="location.href='/our-closed-surveys'">BACK</button>
+</div>
+<h2 style="font-weight:600;">@Model.SurveyTitle [Submit Count(@Model.SubmitCount)]</h2>
+
+@foreach (var question in Model.Question)
+{
+    <div class='form-group'>
+        <ul class='list-group'>
+            <li class='list-group-item' style='font-weight:600;height:100px;'><div class='divQuestionTitleVal' data-questionid="@question.QuestionId">@question.QuestionTextValue</div></li>
+            @foreach (var option in question.Option)
+            {
+                <li class="list-group-item"> @option.OptionTextValue [Submit Count( @option.SubmitCount)] </li>
+            }
+        </ul>
+    </div>
+}
+
+

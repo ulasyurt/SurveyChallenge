@@ -1,0 +1,14 @@
+﻿@{
+    ViewBag.Title = "About";
+    if (Request.IsAuthenticated)
+    {
+        Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+}
+<h2>@ViewBag.Title.</h2>
+
+<p>This application created as a response to a challenge.</p>

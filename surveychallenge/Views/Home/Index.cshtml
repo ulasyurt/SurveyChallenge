@@ -1,0 +1,20 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+    if (Request.IsAuthenticated)
+    {
+        Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+}
+
+<style type="text/css">
+    img { display: block; max-width: 100%; height: auto; }
+</style>
+<div class="row">
+    <div class="col-md-12">
+       <img src="~/images/backgroundGif.gif"/>
+    </div>
+</div>

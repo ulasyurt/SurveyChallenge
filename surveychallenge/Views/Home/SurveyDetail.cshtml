@@ -1,0 +1,66 @@
+﻿@model surveychallenge.Survey
+
+@{
+    if (Request.IsAuthenticated)
+    {
+        Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+}
+<div style="text-align:right; padding-top:20px;">
+    <button type="button" class="btn btn-warning" onclick="location.href='/our-surveys'">CANCEL</button>
+</div>
+<h2 style="font-weight:600;">@Model.SurveyTitle</h2>
+
+@foreach (var question in Model.Question)
+{
+    <div class='form-group'>
+        <ul class='list-group'>
+            <li class='list-group-item' style='font-weight:600;height:100px;'><div class='divQuestionTitleVal' data-questionid="@question.QuestionId">@question.QuestionTextValue</div></li>
+            @foreach (var option in question.Option)
+            {
+                <li class="list-group-item form-check">
+                    <input class="form-check-input" type="radio" name="@question.QuestionId" value="@option.OptionId" />
+                    <label class="form-check-label">
+                        @option.OptionTextValue
+                    </label>
+                </li>
+            }
+        </ul>
+    </div>
+}
+<div style="text-align:right;">
+    <button type="button" class="btn btn-success" onclick="SubmitSurvey()">SUBMIT</button>
+</div>
+<script type="text/javascript">
+    function SubmitSurvey() {
+        if ($(".list-group-item.form-check").find(":checked").length < $(".list-group-item .divQuestionTitleVal").length) {
+            alert("Please answer all questions.");
+        }
+        else {
+            var Submit = new Object();
+            Submit.SurveyId =@Model.SurveyId;
+            var SelectedOptions = [];
+            $(".list-group-item.form-check").find(":checked").each(function () {
+                SelectedOptions.push($(this).val());
+            });
+            Submit.SelectedOptions = SelectedOptions;
+            $.ajax({
+                type: "POST",
+                url: "/Home/Submit",
+                data: JSON.stringify(Submit),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function () {
+                    location.href = "/our-surveys"
+                },
+                failure: function () { alert("Error!"); },
+                error: function (response) { alert(response.responseText); }
+            });
+        }
+    }
+</script>
+

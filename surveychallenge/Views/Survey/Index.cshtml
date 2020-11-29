@@ -1,0 +1,72 @@
+﻿@model IEnumerable<surveychallenge.Survey>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_LayoutAdmin.cshtml";
+}
+<style type="text/css">
+    p { text-align: right; }
+</style>
+
+<h2 style="font-weight:600;">Surveys</h2>
+
+<p>
+    <a class="btn btn-primary" href="survey/create/-1">Create New Survey</a>
+</p>
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.SurveyTitle)
+            </th>
+            <th style="text-align:center">
+                @Html.DisplayNameFor(model => model.SurveyStatus)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>
+                    @Html.DisplayFor(modelItem => item.SurveyTitle) 
+                    [Submit Count(@item.SubmitCount)]
+                </td>
+                @if (item.SurveyStatus == 0)
+                {
+                    <td style="text-align:center">Closed</td>
+                }
+                else
+                {
+                    <td style="text-align:center">Open</td>
+                }
+                <td style="text-align:right">
+                    <a class="btn btn-primary" href="survey/create/@item.SurveyId">Edit</a>
+                    <a class="btn btn-danger" href="javascript:DeleteSurvey(@item.SurveyId)">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<script type="text/javascript">
+    function DeleteSurvey(SurveyId) {
+        var confirmflag = confirm("Survey will be deleted. Are you sure?");
+        if (confirmflag == true) {
+            var parameters = { "SurveyId": SurveyId };
+            $.ajax({
+                type: "POST",
+                url: "/Survey/DeleteSurvey",
+                data: JSON.stringify(parameters),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function () {
+                    location.href = "/survey"
+                },
+                failure: function () { alert("Error!"); },
+                error: function (response) { alert(response.responseText); }
+            });
+        }
+    }
+</script>
